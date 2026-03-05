@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MOST PS Oversight Model - Ultra-Sharp</title>
+    <title>MOST PS Oversight Model - Professional Hub</title>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -15,15 +15,14 @@
             margin: 0;
             padding: 0;
             overflow-x: hidden;
-            overflow-y: auto;
+            overflow-y: auto; 
             background-color: #F4F4F4;
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             font-family: 'Inter', sans-serif;
-            /* Anti-Blur Step 1: Force native subpixel rendering */
-            -webkit-font-smoothing: subpixel-antialiased;
+            -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: auto;
         }
 
@@ -32,8 +31,7 @@
             transform-origin: top center;
             flex-shrink: 0;
             position: relative;
-            margin-bottom: 100px;
-            /* Anti-Blur Step 2: Force high-fidelity snapshot rendering path */
+            margin-bottom: 0; 
             backface-visibility: hidden;
             transform: perspective(1000px) translate3d(0,0,0);
             will-change: transform;
@@ -41,7 +39,6 @@
 
         .canvas-bg {
             width: 100%;
-            min-height: 1600px;
             background-color: #FFFFFF;
             background-image: radial-gradient(#EAEAEA 1.5px, transparent 0);
             background-size: 24px 24px;
@@ -50,9 +47,9 @@
             border: 8px solid #FFDD33;
             position: relative;
             padding: 80px;
+            box-sizing: border-box;
         }
 
-        /* Anti-Blur Step 3: Text node stabilization */
         .sharp-text {
             transform: translateZ(0);
             backface-visibility: hidden;
@@ -89,7 +86,6 @@
             border-radius: 40px;
             position: relative;
             overflow: hidden;
-            /* Use discrete shadows instead of smooth transitions to avoid blur triggers */
             transition: box-shadow 0.1s steps(2);
         }
 
@@ -193,7 +189,6 @@
                     const container = document.getElementById('root-container');
                     if (container) {
                         const scale = window.innerWidth / 1980;
-                        // Forcing high-fidelity rendering by anchoring scale with translate3d
                         container.style.transform = `scale(${Math.min(scale, 1)}) translate3d(0,0,0)`;
                     }
                 };
@@ -239,22 +234,62 @@
 
             const lifecycleSteps = [
                 { id: 1, type: "sf", title: "SF Assignment", details: "Assigned to the main Salesforce MOST Case immediately following the Closed Won marker.", action: "Verify ownership & discovery" },
-                { id: 2, type: "blueprint", title: "Blueprint Prep", details: "Use the below Blueprint link to create the customers MOST hub. From there, add that link to the \"Blueprint Link\" field on the case. Thirdly, set up the Hours integration using the below confluence instructions.", action: "Draft roadmap & framework", links: [{ label: "Blueprint Template", url: "https://miro.com/app/board/uXjVGewbhus=/" }, { label: "Hours Integration Guide", url: "https://miro.atlassian.net/wiki/spaces/OS/pages/5231018453/MOST+Hours+Utilization+Integration+Guide" }] },
+                { 
+                    id: 2, 
+                    type: "blueprint", 
+                    title: "Blueprint Prep", 
+                    details: "Use the below Blueprint link to create the customers MOST hub. From there, add that link to the \"Blueprint Link\" field on the case. Thirdly, set up the Hours integration using the below confluence instructions.", 
+                    action: "Create blueprint and hours integration", 
+                    links: [
+                        { label: "Blueprint Template", url: "https://miro.com/app/board/uXjVGewbhus=/" }, 
+                        { label: "Hours Integration Guide", url: "https://miro.atlassian.net/wiki/spaces/OS/pages/5231018453/MOST+Hours+Utilization+Integration+Guide" }
+                    ] 
+                },
                 { id: 3, type: "pod", title: "Pod Coordination", details: "Reach out to the CSM. Assist them in building the framework and coordinate attendance at Kickoff.", action: "Align with Strategic Architect" },
                 { id: 4, type: "kickoff", title: "The Kickoff Call", details: "CSM leads strategy. PS supports with technical validation. GOAL: Have at least the first quarter planned by call end.", action: "Validate Scope & Q1 Plan" },
-                { id: 5, type: "monitor", title: "Continued Monitoring", details: "Assess usage against 70% threshold. Schedule monthly alignment calls for Q1. Report: Projects & Hours.", action: "Monthly Calls & Hour Audits", links: [{ label: "Reporting: Account Projects & Hours", url: "https://rtb.lightning.force.com/lightning/r/Report/00ORO00000mbVNr2AM/view?queryScope=userFolders" }] }
+                { 
+                    id: 5, 
+                    type: "monitor", 
+                    title: "Continued Monitoring", 
+                    details: "Assess usage against 70% threshold. Schedule monthly alignment calls for Q1. Report: Projects & Hours.", 
+                    action: "Monthly Calls & Hour Audits", 
+                    links: [
+                        { label: "Account Projects & Hours Report", url: "https://rtb.lightning.force.com/lightning/r/Report/00ORO00000mbVNr2AM/view?queryScope=userFolders" }
+                    ] 
+                }
             ];
 
             const matrixRows = [
-                { label: "Account Strategy", csm: "LEAD: Owns the Joint Success Plan (JSP) and business outcomes.", ps: "SUPPORT: Provides technical inputs to align framework with Miro best practices." },
-                { label: "MOST Roadmap", csm: "Defines the 'What' and 'Why' for the customer relationship.", ps: "Helps build the technical framework to map goals to hours." },
-                { label: "Engagement Requests", csm: "LEAD: Responsible for submitting all Service Cases in Salesforce.", ps: "SUPPORT: Helps inform and scope cases to ensure they are 'ready for work'." },
-                { label: "Utilization Tracking", csm: "Owns renewal and commercial health.", ps: "Monitors consumption trends and flags low-usage risks to the CSM pod." },
-                { label: "Project Delivery", csm: "High-level project awareness.", ps: "Actual work is performed by the Pooled Expert Team." }
+                { 
+                    label: "Account Strategy", 
+                    csm: "OWNER: Sole assigned strategic resource. Owns the Joint Success Plan (JSP) and business outcomes. Maintains recurring meetings to stay on top of strategic priorities.", 
+                    ps: "CONSULTANT: Provides technical inputs to ensure the strategic framework aligns with Miro platform best practices." 
+                },
+                { 
+                    label: "MOST Roadmap", 
+                    csm: "ARCHITECT: Defines high-level priorities and intake of new engagement requests. Hosts recurring cadences to ensure alignment and surface evolving needs.", 
+                    ps: "ADVISOR: Helps build the technical framework to map customer goals to available expert hours." 
+                },
+                { 
+                    label: "Engagement Requests", 
+                    csm: "LEAD: Responsible for submitting all Service Cases in Salesforce at the account level based on outcomes from recurring syncs.", 
+                    ps: "SUPPORT: Helps inform and scope the cases to ensure they are \"ready for work\" by the delivery experts." 
+                },
+                { 
+                    label: "Utilization Tracking", 
+                    csm: "COMMERCIAL OWNER: Owns renewal and commercial health. Maintains recurring meetings to ensure value realization and adjust pacing as needed.", 
+                    ps: "OVERSIGHT: Monitors consumption trends and flags low-usage risks proactively to the CSM pod." 
+                },
+                { 
+                    label: "Project Delivery", 
+                    csm: "AWARENESS: Maintains high-level project awareness via recurring check-ins to drive relationship value and adoption.", 
+                    ps: "EXECUTION: Oversees delivery quality. Actual build work is performed by the Pooled Expert Team." 
+                }
             ];
 
             return (
                 <div className="canvas-bg select-none">
+                    {/* Header Section */}
                     <div className="flex justify-between items-end mb-20 sharp-text">
                         <div>
                             <div className="flex items-center gap-4 mb-4">
@@ -270,7 +305,8 @@
                         </div>
                     </div>
 
-                    <div className="flex gap-8 mb-16 h-[680px]">
+                    {/* Operational Lifecycle Section */}
+                    <div className="flex gap-8 mb-12 h-[680px]">
                         {lifecycleSteps.map((step) => (
                             <div key={step.id} className="flex-1 step-card">
                                 <div className="ghost-number">0{step.id}</div>
@@ -290,6 +326,7 @@
                         ))}
                     </div>
 
+                    {/* Critical Boundary Divider Section */}
                     <div className="w-full bg-[#1C1C1E] rounded-[3rem] p-8 mb-12 flex flex-col items-center justify-center border-[6px] border-[#FFDD33] shadow-[12px_12px_0px_rgba(0,0,0,0.1)] sharp-text text-center">
                         <span className="text-[#FFDD33] font-black uppercase tracking-widest text-xs mb-2">Critical Role Boundary</span>
                         <h2 className="text-white text-5xl font-[900] italic uppercase leading-none tracking-tighter mb-3">MOST IS NOT "TAM-LITE"</h2>
@@ -298,27 +335,43 @@
                         </p>
                     </div>
 
+                    {/* Accountability Matrix */}
                     <div className="bg-white border-4 border-[#1C1C1E] rounded-[4rem] p-16 flex flex-col shadow-[16px_16px_0px_#1C1C1E]">
-                        <div className="flex items-center justify-between mb-12 sharp-text">
-                            <h3 className="text-xl font-black uppercase tracking-widest text-[#1C1C1E]/40 italic underline decoration-2 underline-offset-8">Accountability Matrix: CSM vs PS</h3>
-                            <div className="flex gap-10">
-                                <div className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-[#867AFF] border-2 border-[#1C1C1E]"></div><span className="text-base font-black uppercase tracking-widest">CSM Role</span></div>
-                                <div className="flex items-center gap-3"><div className="w-5 h-5 rounded-full bg-[#47D1C4] border-2 border-[#1C1C1E]"></div><span className="text-base font-black uppercase tracking-widest">PS Role</span></div>
+                        <div className="grid grid-cols-12 gap-8 mb-12 sharp-text">
+                            <div className="col-span-2">
+                                <h3 className="text-xl font-black uppercase tracking-widest text-[#1C1C1E]/40 italic underline decoration-4 underline-offset-8">Accountability Matrix</h3>
+                            </div>
+                            <div className="col-span-5 flex flex-col items-center gap-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-6 h-6 rounded-full bg-[#867AFF] border-2 border-[#1C1C1E]"></div>
+                                    <span className="text-3xl font-black uppercase tracking-widest text-[#1C1C1E]">CSM RESPONSIBILITIES</span>
+                                </div>
+                                <span className="bg-[#867AFF]/20 text-[#867AFF] px-6 py-2 rounded-full text-sm font-black uppercase tracking-[0.2em] border border-[#867AFF]/30 shadow-sm">
+                                    Strategic Planning Arm
+                                </span>
+                            </div>
+                            <div className="col-span-5 flex flex-col items-center gap-2">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-6 h-6 rounded-full bg-[#47D1C4] border-2 border-[#1C1C1E]"></div>
+                                    <span className="text-3xl font-black uppercase tracking-widest text-[#1C1C1E]">PS RESPONSIBILITIES</span>
+                                </div>
+                                <span className="bg-[#47D1C4]/20 text-[#47D1C4] px-6 py-2 rounded-full text-sm font-black uppercase tracking-[0.2em] border border-[#47D1C4]/30 shadow-sm">
+                                    Technical Execution Arm
+                                </span>
                             </div>
                         </div>
+
                         <div className="space-y-6 sharp-text">
                             {matrixRows.map((row, i) => (
-                                <div key={i} className="grid grid-cols-12 gap-8 items-center">
-                                    <div className="col-span-3 text-2xl font-black uppercase italic tracking-tighter text-[#1C1C1E] leading-tight">{row.label}</div>
-                                    <div className="col-span-4 matrix-cell csm-bg h-full flex items-center">
-                                        <p className="text-xl font-bold text-[#1C1C1E] leading-tight">
-                                            <span className="text-xs font-black uppercase text-[#867AFF] block mb-1">CSM Responsibility</span>
+                                <div key={i} className="grid grid-cols-12 gap-8 items-stretch">
+                                    <div className="col-span-2 text-3xl font-black uppercase italic tracking-tighter text-[#1C1C1E] leading-tight flex items-center">{row.label}</div>
+                                    <div className="col-span-5 matrix-cell csm-bg flex items-center p-8">
+                                        <p className="text-2xl font-bold text-[#1C1C1E] leading-tight">
                                             {row.csm}
                                         </p>
                                     </div>
-                                    <div className="col-span-5 matrix-cell ps-bg h-full flex items-center">
-                                        <p className="text-xl font-bold text-[#1C1C1E] leading-tight">
-                                            <span className="text-xs font-black uppercase text-[#47D1C4] block mb-1">PS Responsibility</span>
+                                    <div className="col-span-5 matrix-cell ps-bg flex items-center p-8">
+                                        <p className="text-2xl font-bold text-[#1C1C1E] leading-tight">
                                             {row.ps}
                                         </p>
                                     </div>
@@ -327,9 +380,9 @@
                         </div>
                     </div>
                     
-                    <div className="mt-24 pt-10 border-t-4 border-[#1C1C1E]/5 flex justify-between opacity-30 italic sharp-text">
-                        <div className="text-sm font-black uppercase tracking-[0.5em]">Oversight Rhythm Engine v4.2</div>
-                        <div className="text-sm font-black uppercase tracking-[0.3em]">© 2025 MIRO PROFESSIONAL SERVICES</div>
+                    {/* Bottom Signature */}
+                    <div className="mt-24 pt-10 border-t-4 border-[#1C1C1E]/5 flex justify-center opacity-30 italic sharp-text">
+                        <div className="text-sm font-black uppercase tracking-[0.5em]">MIRO PROFESSIONAL SERVICES</div>
                     </div>
                 </div>
             );
