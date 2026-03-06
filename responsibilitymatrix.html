@@ -11,36 +11,53 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;0,900;1,900&display=swap');
         
-        * {
-            box-sizing: border-box;
-        }
-
         html, body {
             margin: 0;
             padding: 0;
+            overflow-x: hidden; 
             background-color: #F4F4F4;
-            font-family: 'Inter', sans-serif;
-            -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
+            min-height: 100vh;
+            width: 100vw;
             display: flex;
             justify-content: center;
             align-items: flex-start;
-            min-height: 100vh;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
         }
 
         #root-container {
             width: 1280px;
-            margin: 40px auto;
+            height: auto;
             transform-origin: top center;
+            flex-shrink: 0;
+            position: relative;
+            margin: 40px 0;
+        }
+
+        .canvas-bg {
+            width: 1280px;
+            height: auto;
+            min-height: 720px;
             background-color: #FFFFFF;
             background-image: radial-gradient(#EAEAEA 1.5px, transparent 0);
             background-size: 24px 24px;
+            display: flex;
+            flex-direction: column; 
             border: 4px solid #FFDD33;
             border-radius: 24px;
             position: relative;
-            min-height: fit-content;
-            box-shadow: 0 40px 80px rgba(0,0,0,0.1);
-            flex-shrink: 0;
+            overflow: visible;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+        }
+
+        /* Pixel-Perfect Text Stabilization */
+        .sharp-text {
+            -webkit-font-smoothing: antialiased;
+            backface-visibility: hidden;
+            display: block;
+            transform: none !important;
+            position: relative;
+            z-index: 50; 
         }
 
         .miro-highlight {
@@ -51,63 +68,18 @@
             box-shadow: 4px 4px 0px #1C1C1E;
         }
 
-        .card {
-            background: #FFFFFF;
-            border: 4px solid #1C1C1E;
-            border-radius: 20px;
+        .card-container {
+            background-color: #FFFFFF;
+            border: 3px solid #1C1C1E;
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.1s steps(2);
             position: relative;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0px 4px 0px #1C1C1E;
-        }
-
-        .card:hover {
-            transform: translate(-3px, -3px);
-            box-shadow: 10px 10px 0px #1C1C1E;
-        }
-
-        .sharp-title {
-            font-weight: 900;
-            font-style: italic;
-            text-transform: uppercase;
-            letter-spacing: -0.02em;
-        }
-
-        .role-pill {
-            font-size: 11px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.12em;
-            padding: 5px 12px;
-            border-radius: 6px;
-            border: 2px solid #1C1C1E;
-            display: inline-block;
-            margin-bottom: 12px;
-            color: #1C1C1E;
-            line-height: 1;
-        }
-
-        .arm-label-header {
-            font-size: 14px;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 0.15em;
-            padding: 14px 24px;
-            border-radius: 12px;
-            border: 4px solid #1C1C1E;
-            display: inline-block;
-            text-align: center;
-            width: 100%;
-            box-shadow: 6px 6px 0px #1C1C1E;
         }
 
         .vs-circle {
             background: #1C1C1E;
             color: #FFDD33;
-            width: 44px;
-            height: 44px;
+            width: 52px;
+            height: 52px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -117,47 +89,36 @@
             border: 4px solid #FFFFFF;
             z-index: 20;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            font-size: 16px;
         }
 
         .talk-track {
             background-color: #1C1C1E;
             color: #FFFFFF;
-            padding: 28px;
-            border-radius: 28px;
+            padding: 32px;
+            border-radius: 32px;
             border-bottom-left-radius: 4px;
-            border-left: 6px solid #FFDD33;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
 
-        .health-glow-card {
-            border: 3px solid rgba(255, 221, 51, 0.4);
-            animation: soft-pulse 3s infinite ease-in-out;
-            background: white;
-            border-radius: 24px;
+        .role-pill {
+            font-size: 12px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: 2.5px solid #1C1C1E;
+            display: inline-block;
+            margin-bottom: 12px;
         }
 
-        @keyframes soft-pulse {
-            0% { box-shadow: 0 0 0px rgba(255, 221, 51, 0); }
-            50% { box-shadow: 0 0 25px rgba(255, 221, 51, 0.5); }
-            100% { box-shadow: 0 0 0px rgba(255, 221, 51, 0); }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .csm-badge { background: #FFDD33; color: #1C1C1E; }
-        .ps-badge { background: #47D1C4; color: #1C1C1E; }
-
-        .category-divider {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            margin-bottom: 20px;
-            width: 100%;
-        }
-
-        .category-line {
-            height: 2px;
-            background-color: #1C1C1E;
-            opacity: 0.1;
-            flex: 1;
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
         }
     </style>
 </head>
@@ -169,181 +130,153 @@
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        const SectionHeader = ({ label, title, subtitle }) => (
-            <div className="mb-12">
-                <div className="flex items-center gap-4 mb-4">
-                    <span className="bg-[#1C1C1E] text-white px-3 py-1 text-[10px] font-black uppercase tracking-[0.3em] rounded-md">{label}</span>
-                    <div className="h-[2px] flex-1 bg-[#1C1C1E]/10"></div>
-                </div>
-                <h2 className="text-[52px] sharp-title text-[#1C1C1E] leading-tight mb-1">{title}</h2>
-                <p className="text-lg font-bold text-[#1C1C1E]/50 italic">{subtitle}</p>
-            </div>
-        );
-
-        const AccountabilityRow = ({ category, csmRole, csmTask, psRole, psTask }) => (
-            <div className="mb-12 last:mb-0">
-                <div className="category-divider">
-                    <div className="category-line"></div>
-                    <h3 className="text-3xl sharp-title text-[#1C1C1E] opacity-20 whitespace-nowrap">{category}</h3>
-                    <div className="category-line"></div>
-                </div>
-
-                <div className="relative grid grid-cols-2 gap-12">
-                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-                        <div className="vs-circle">VS</div>
-                    </div>
-                    
-                    {/* CSM: PLANNING ARM */}
-                    <div className="card p-8 border-l-[12px] border-l-[#FFDD33]">
-                        <div>
-                            <span className="role-pill csm-badge">{csmRole}</span>
-                        </div>
-                        <p className="text-lg font-bold text-[#1C1C1E] leading-snug">{csmTask}</p>
-                    </div>
-
-                    {/* PS: EXECUTION ARM */}
-                    <div className="card p-8 border-l-[12px] border-l-[#47D1C4]">
-                        <div>
-                            <span className="role-pill ps-badge">{psRole}</span>
-                        </div>
-                        <p className="text-lg font-bold text-[#1C1C1E] leading-snug">{psTask}</p>
-                    </div>
-                </div>
-            </div>
-        );
-
-        const App = () => {
+        const useAutoScaler = () => {
             useEffect(() => {
                 const scaler = () => {
                     const container = document.getElementById('root-container');
                     if (container) {
-                        const scale = (window.innerWidth - 80) / 1280;
-                        if (scale < 1) {
-                            container.style.transform = `scale(${scale})`;
-                        } else {
-                            container.style.transform = 'scale(1)';
-                        }
+                        const scale = Math.min(window.innerWidth / 1320, 1);
+                        container.style.transform = `scale(${scale})`;
                     }
                 };
                 window.addEventListener('resize', scaler);
                 scaler();
                 return () => window.removeEventListener('resize', scaler);
             }, []);
+        };
+
+        const AccountabilityRow = ({ category, csmRole, csmTask, psRole, psTask }) => (
+            <div className="mb-14 last:mb-0">
+                <div className="flex items-center gap-6 mb-6 opacity-30">
+                    <div className="h-[2px] flex-1 bg-[#1C1C1E]"></div>
+                    <h3 className="text-base font-black italic uppercase tracking-[0.2em] whitespace-nowrap">{category}</h3>
+                    <div className="h-[2px] flex-1 bg-[#1C1C1E]"></div>
+                </div>
+
+                <div className="relative grid grid-cols-2 gap-12">
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
+                        <div className="vs-circle">VS</div>
+                    </div>
+                    
+                    <div className="card-container p-8 rounded-[2rem] border-l-[16px] border-l-[#FFDD33] shadow-[6px_6px_0px_#1C1C1E]/5">
+                        <span className="role-pill bg-[#FFDD33] text-[#1C1C1E]">{csmRole}</span>
+                        <p className="text-[17px] font-bold text-[#1C1C1E] leading-relaxed">{csmTask}</p>
+                    </div>
+
+                    <div className="card-container p-8 rounded-[2rem] border-l-[16px] border-l-[#47D1C4] shadow-[6px_6px_0px_#1C1C1E]/5">
+                        <span className="role-pill bg-[#47D1C4] text-[#1C1C1E]">{psRole}</span>
+                        <p className="text-[17px] font-bold text-[#1C1C1E] leading-relaxed">{psTask}</p>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const App = () => {
+            useAutoScaler();
+
+            const matrixData = [
+                {
+                    category: "Account Strategy",
+                    csmRole: "Owner",
+                    csmTask: "Sole assigned strategic resource. Owns the Joint Success Plan (JSP) and business outcomes. Maintains recurring meetings to stay on top of strategic priorities.",
+                    psRole: "Consultant",
+                    psTask: "Provides technical inputs to ensure the strategic framework aligns with Miro platform best practices and long-term environment health."
+                },
+                {
+                    category: "MOST Roadmap",
+                    csmRole: "Architect",
+                    csmTask: "Defines high-level priorities and intake of new requests. Hosts recurring cadences to ensure alignment and surface evolving needs.",
+                    psRole: "Advisor",
+                    psTask: "Helps build the technical framework for the FIRST QUARTER during the Kickoff Call. PS does not proactively scope outside of this call."
+                },
+                {
+                    category: "Engagement Requests",
+                    csmRole: "Lead",
+                    csmTask: "Responsible for submitting all Service Cases in Salesforce at the account level based on outcomes from recurring strategic syncs.",
+                    psRole: "Support",
+                    psTask: "Helps inform and scope the cases to ensure they are 100% 'ready for work' by the pooled technical delivery experts."
+                },
+                {
+                    category: "Utilization Tracking",
+                    csmRole: "Commercial Owner",
+                    csmTask: "Owns renewal and commercial health. Maintains recurring meetings to ensure value realization and adjust pacing as needed.",
+                    psRole: "Oversight",
+                    psTask: "Monitors consumption trends and flags low-usage risks proactively to the CSM pod with suggested backlog project pitches."
+                },
+                {
+                    category: "Project Delivery",
+                    csmRole: "Awareness",
+                    csmTask: "Maintains high-level project awareness via recurring check-ins to drive relationship value and platform adoption.",
+                    psRole: "Execution",
+                    psTask: "Oversees delivery quality. Actual build work and technical implementation is performed by the Pooled Expert Team."
+                }
+            ];
 
             return (
-                <div className="p-16">
-                    {/* HERO SECTION */}
+                <div className="canvas-bg select-none p-12">
+                    <div className="mb-16 sharp-text">
+                        <div className="flex items-center gap-6 mb-4">
+                            <span className="bg-[#1C1C1E] text-white px-4 py-1.5 text-xs font-black uppercase tracking-[0.4em] rounded-lg">INTERNAL STRATEGY ENABLEMENT</span>
+                            <div className="h-[2px] flex-1 bg-[#1C1C1E]/10"></div>
+                        </div>
+                        <h1 className="text-[84px] font-[900] italic uppercase leading-[0.8] text-[#1C1C1E] tracking-tighter mb-4">
+                            <span className="miro-highlight">MOST</span> <br/>Ownership Breakdown
+                        </h1>
+                        <p className="text-2xl font-bold text-[#1C1C1E]/40 italic">Our Strategic Accountability Partnership</p>
+                    </div>
+
+                    <div className="grid grid-cols-12 gap-10 mb-20 sharp-text">
+                        <div className="col-span-8">
+                            <div className="talk-track shadow-2xl border-2 border-[#1C1C1E] h-full flex flex-col justify-center">
+                                <h5 className="text-[#FFDD33] font-black uppercase text-xs tracking-[0.3em] mb-4 italic">The Partnership Metaphor</h5>
+                                <p className="text-2xl font-bold leading-tight opacity-95">
+                                    "As the CSM, you are the Strategic Architect steering the ship. PS acts as your technical co-pilot—we help you scope the route, execute the work, and alert you if the hours trend low."
+                                </p>
+                            </div>
+                        </div>
+                        <div className="col-span-4 flex flex-col gap-6">
+                            <div className="card-container p-8 rounded-[2.5rem] bg-white border-[#1C1C1E] border-[4px] text-center flex-1 flex flex-col justify-center shadow-[12px_12px_0px_#1C1C1E]">
+                                <p className="text-xs font-black italic uppercase text-[#1C1C1E]/40 mb-2 tracking-[0.3em]">Health Threshold</p>
+                                <div className="text-8xl font-[900] italic text-[#F24822] leading-none mb-2">70%</div>
+                                <p className="text-lg font-black text-[#1C1C1E] leading-tight uppercase">Min. Utilization<br/>(42+ Hours / Qtr)</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="mb-20">
-                        <div className="flex items-center gap-6 mb-8">
-                            <div className="w-20 h-20 bg-[#1C1C1E] rounded-[24px] flex items-center justify-center shadow-xl shrink-0">
-                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFDD33" strokeWidth="3">
-                                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                                </svg>
+                        <div className="flex gap-12 mb-10 sharp-text">
+                            <div className="flex-1 text-center py-4 bg-[#FFDD33] border-3 border-[#1C1C1E] rounded-2xl font-black italic uppercase text-sm tracking-widest shadow-[8px_8px_0px_#1C1C1E]">
+                                Strategic Planning Arm (CSM)
                             </div>
-                            <div>
-                                <h4 className="text-[10px] font-black uppercase tracking-[0.5em] text-[#1C1C1E]/40 mb-1 leading-none">Internal Strategy Enablement</h4>
-                                {/* Title consolidated to 2 lines */}
-                                <h1 className="text-[72px] sharp-title leading-[0.85] text-[#1C1C1E]">
-                                    THE <span className="miro-highlight">MOST</span> <br/>
-                                    OWNERSHIP FRAMEWORK
-                                </h1>
+                            <div className="flex-1 text-center py-4 bg-[#47D1C4] border-3 border-[#1C1C1E] rounded-2xl font-black italic uppercase text-sm tracking-widest shadow-[8px_8px_0px_#1C1C1E]">
+                                Technical Execution Arm (PS)
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-12 gap-10">
-                            <div className="col-span-8">
-                                <div className="talk-track shadow-2xl h-full flex flex-col justify-center">
-                                    <h5 className="text-[#FFDD33] font-black uppercase text-xs tracking-[0.2em] mb-3 italic">The Co-Pilot Partnership</h5>
-                                    <p className="text-[22px] font-bold leading-tight">
-                                        "As the CSM, you are the Strategic Architect steering the ship. You define the destination. 
-                                        PS acts as your technical co-pilot—we help you scope the route, execute the work, and 
-                                        alert you if the hours are trending low."
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            <div className="col-span-4 flex flex-col justify-center health-glow-card p-6 border-2 border-[#FFDD33]">
-                                <p className="text-xs font-black italic uppercase text-[#1C1C1E]/40 mb-1 tracking-widest">Health Threshold</p>
-                                <div className="text-[72px] sharp-title text-[#1C1C1E] mb-1 leading-none">70%</div>
-                                <p className="text-base font-bold text-[#1C1C1E] opacity-70 leading-tight">Min. Utilization <br/> (42+ Hours / Quarter)</p>
-                                <div className="mt-4 h-1 w-full bg-[#EAEAEA] rounded-full overflow-hidden">
-                                    <div className="h-full bg-[#FFDD33] w-[70%]"></div>
-                                </div>
-                            </div>
+                        <div className="fade-in">
+                            {matrixData.map((row, idx) => (
+                                <AccountabilityRow key={idx} {...row} />
+                            ))}
                         </div>
                     </div>
 
-                    {/* ACCOUNTABILITY MATRIX */}
-                    <SectionHeader 
-                        label="THE ACCOUNTABILITY MATRIX"
-                        title="PLANNING VS. EXECUTION"
-                        subtitle="Detailed alignment across core business functions"
-                    />
-
-                    {/* PERSISTENT COLUMN HEADERS */}
-                    <div className="grid grid-cols-2 gap-12 mb-12">
-                        <div className="arm-label-header csm-badge italic">
-                            Strategic Planning Arm (CSM)
-                        </div>
-                        <div className="arm-label-header ps-badge italic">
-                            Technical Execution Arm (PS)
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col">
-                        <AccountabilityRow 
-                            category="ACCOUNT STRATEGY"
-                            csmRole="OWNER"
-                            csmTask="Sole assigned strategic resource. Owns the Joint Success Plan (JSP) and business outcomes. Maintains recurring meetings to stay on top of strategic priorities."
-                            psRole="CONSULTANT"
-                            psTask="Provides technical inputs to ensure the strategic framework aligns with Miro platform best practices and technical roadmap."
-                        />
-                        <AccountabilityRow 
-                            category="MOST ROADMAP"
-                            csmRole="ARCHITECT"
-                            csmTask="Defines high-level priorities and intake of new engagement requests. Hosts recurring cadences to ensure alignment and surface evolving needs."
-                            psRole="ADVISOR"
-                            psTask="Helps build the technical framework for the FIRST QUARTER during the Kickoff Call (or when consulted by the CSM). PS does not proactively scope outside of the official Kickoff Call."
-                        />
-                        <AccountabilityRow 
-                            category="ENGAGEMENT REQUESTS"
-                            csmRole="LEAD"
-                            csmTask="Responsible for submitting all Service Cases in Salesforce at the account level based on outcomes from strategic planning syncs."
-                            psRole="SUPPORT"
-                            psTask="Helps inform and scope the cases to ensure they are 100% 'ready for work' by the expert pooled delivery teams."
-                        />
-                        <AccountabilityRow 
-                            category="UTILIZATION TRACKING"
-                            csmRole="COMMERCIAL OWNER"
-                            csmTask="Owns renewal and commercial health. Maintains recurring meetings to ensure value realization and adjust pacing as needed."
-                            psRole="OVERSIGHT"
-                            psTask="Monitors consumption trends and flags low-usage risks proactively to the CSM pod with specific backlog project suggestions."
-                        />
-                        <AccountabilityRow 
-                            category="PROJECT DELIVERY"
-                            csmRole="AWARENESS"
-                            csmTask="Maintains high-level project awareness via recurring check-ins to drive customer relationship value and platform adoption."
-                            psRole="EXECUTION"
-                            psTask="Oversees technical delivery quality. Actual build work and configuration is performed by the Pooled Expert Team."
-                        />
-                    </div>
-
-                    {/* STRATEGIC BOUNDARY SECTION */}
-                    <div className="mt-20 p-10 bg-[#1C1C1E] rounded-[32px] text-white border-4 border-[#FFDD33] shadow-2xl relative overflow-hidden">
-                        <div className="flex items-center gap-10 relative z-10">
-                            <div className="text-3xl sharp-title text-[#FFDD33] whitespace-nowrap uppercase">Strategic Ownership</div>
-                            <div className="w-[1px] h-14 bg-white/20"></div>
-                            <p className="text-xl font-bold opacity-90 leading-snug">
-                                MOST is <span className="text-[#FFDD33]">not TAM-Lite</span>. 
-                                Strategic planning and <span className="text-[#FFDD33]">engagement coordination</span> are owned exclusively by the CSM.
+                    <div className="p-10 bg-[#1C1C1E] text-white rounded-[3rem] border-4 border-[#FFDD33] shadow-2xl relative overflow-hidden mb-12 sharp-text">
+                        <div className="relative z-10 flex items-center gap-10">
+                            <div className="text-4xl font-[900] italic uppercase text-[#FFDD33] shrink-0">Strategic Boundary</div>
+                            <div className="w-[2px] h-16 bg-white/20"></div>
+                            <p className="text-2xl font-bold leading-snug opacity-90">
+                                MOST is <span className="text-[#FFDD33]">not TAM-Lite</span>. Strategic planning, account vision, and engagement coordination are owned exclusively by the CSM.
                             </p>
                         </div>
-                        <div className="absolute -bottom-10 -left-6 text-[180px] font-black italic uppercase text-white/[0.03] pointer-events-none select-none">
+                        <div className="absolute -bottom-12 -right-12 text-[180px] font-black italic uppercase text-white/[0.03] pointer-events-none select-none">
                             OVERSIGHT
                         </div>
                     </div>
 
-                    <div className="h-20"></div>
+                    <div className="flex justify-between items-center opacity-30 pt-8 border-t border-[#1C1C1E]/10 sharp-text">
+                        <div className="text-[#1C1C1E] font-black italic uppercase text-xs tracking-[0.3em]">Accountability • Partnership • Scale</div>
+                        <div className="text-[#1C1C1E] font-black italic uppercase text-xs tracking-[0.3em]">© FY26 Miro Professional Services</div>
+                    </div>
                 </div>
             );
         };
