@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miro MOST 時間管理ポリシー</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;0,900;1,900&family=Noto+Sans+JP:wght@400;700;900&display=swap');
+        
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            background-color: #F4F4F4;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #root-container {
+            width: 1280px;
+            height: 720px;
+            transform-origin: center center;
+            flex-shrink: 0;
+            position: relative;
+            background-color: white;
+        }
+
+        .canvas-bg {
+            width: 100%;
+            height: 100%;
+            background-color: #FFFFFF;
+            background-image: radial-gradient(#EAEAEA 1.5px, transparent 0);
+            background-size: 24px 24px;
+            display: flex;
+            flex-direction: column; 
+            border: 4px solid #FFDD33;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .miro-highlight {
+            background-color: #FFDD33;
+            padding: 0 12px;
+            border-radius: 8px;
+            display: inline-block;
+            box-shadow: 4px 4px 0px #1C1C1E;
+        }
+
+        .card-container {
+            background-color: #FFFFFF;
+            border: 4px solid #1C1C1E;
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.1s steps(2);
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .card-container:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 0px 0px #1C1C1E;
+        }
+
+        .section-tag {
+            background-color: #1C1C1E;
+            color: #FFDD33;
+            padding: 2px 10px;
+            border-radius: 6px;
+            font-weight: 900;
+            font-style: italic;
+            text-transform: uppercase;
+            font-size: 11px;
+            width: fit-content;
+        }
+
+        .view-transition {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .sharp-text {
+            transform: translateZ(0);
+            backface-visibility: hidden;
+        }
+        
+        .policy-item-text {
+            font-size: 14.5px;
+            line-height: 1.3;
+            font-weight: 700;
+        }
+
+        /* Custom Scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1C1C1E20; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div id="root-container">
+        <div id="root" style="width: 100%; height: 100%;"></div>
+    </div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const useAutoScaler = () => {
+            useEffect(() => {
+                const scaler = () => {
+                    const container = document.getElementById('root-container');
+                    if (container) {
+                        const scale = Math.min(window.innerWidth / 1300, window.innerHeight / 740);
+                        container.style.transform = `scale(${scale})`;
+                    }
+                };
+                window.addEventListener('resize', scaler);
+                scaler();
+                return () => window.removeEventListener('resize', scaler);
+            }, []);
+        };
+
+        const Icon = ({ type, color = "#1C1C1E", size = "32" }) => {
+            const icons = {
+                allocation: (
+                    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2" />
+                    </svg>
+                ),
+                counting: (
+                    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                ),
+                rules: (
+                    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                ),
+                purchase: (
+                    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                    </svg>
+                ),
+                back: (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                ),
+                check: (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                ),
+                cross: (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                )
+            };
+            return icons[type] || null;
+        };
+
+        const OverviewCard = ({ data, onSelect }) => (
+            <div 
+                className="card-container rounded-[2rem] p-6 flex flex-col h-full bg-white shadow-[2px_2px_0px_#1C1C1E]"
+                onClick={() => onSelect(data)}
+            >
+                <div className="flex justify-between items-start mb-4">
+                    <div className="p-3 rounded-xl border-2 border-[#1C1C1E] shadow-[3px_3px_0px_#1C1C1E]" style={{ backgroundColor: data.color }}>
+                        <Icon type={data.id} size="28" />
+                    </div>
+                    <div className="section-tag">{data.shortLabel}</div>
+                </div>
+                
+                <h2 className="text-2xl font-[900] italic uppercase leading-tight tracking-tighter mb-3 text-[#1C1C1E] sharp-text">
+                    {data.title}
+                </h2>
+                
+                <div className="flex-1 space-y-2">
+                    {data.highlights.map((h, i) => (
+                        <div key={i} className="flex gap-2 items-start">
+                            <div className="w-1.5 h-1.5 rounded-full bg-[#1C1C1E] mt-1.5 shrink-0"></div>
+                            <span className="text-[14px] font-bold text-[#1C1C1E]/80 leading-tight">{h}</span>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="mt-4 pt-4 border-t-2 border-[#1C1C1E]/5 flex items-center justify-between group">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#1C1C1E]/30">詳細を見る</span>
+                    <div className="w-8 h-8 rounded-full border-2 border-[#1C1C1E] flex items-center justify-center group-hover:bg-[#1C1C1E] group-hover:text-white transition-colors">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const DetailView = ({ section, onBack }) => (
+            <div className="view-transition flex-1 flex flex-col px-10 pb-6 overflow-hidden">
+                <div className="mb-4 flex items-center gap-4 shrink-0">
+                    <button 
+                        onClick={onBack}
+                        className="flex items-center gap-2 bg-[#1C1C1E] text-white px-3 py-1.5 rounded-lg text-[10px] font-black hover:bg-[#1C1C1E]/80 transition-all shadow-[3px_3px_0px_#FFDD33]"
+                    >
+                        <Icon type="back" color="white" size="14" />
+                        ダッシュボードに戻る
+                    </button>
+                    <div className="h-[1px] flex-1 bg-[#1C1C1E]/10 rounded-full"></div>
+                </div>
+
+                <div className="grid grid-cols-12 gap-5 flex-1 overflow-hidden">
+                    {/* Left Column - Hero Summary */}
+                    <div className="col-span-4 flex flex-col overflow-hidden">
+                        <div className="card-container rounded-[1.5rem] p-8 flex-1 bg-white flex flex-col justify-center items-center text-center" style={{ borderColor: section.color }}>
+                            <div className="p-6 rounded-2xl border-2 border-[#1C1C1E] shadow-[4px_4px_0px_#1C1C1E] w-fit mb-6" style={{ backgroundColor: section.color }}>
+                                <Icon type={section.id} size="48" />
+                            </div>
+                            <h2 className="text-4xl font-[900] italic uppercase leading-tight tracking-tighter text-[#1C1C1E] mb-2">{section.title}</h2>
+                            <p className="text-lg font-black text-[#1C1C1E]/40 italic uppercase tracking-widest">{section.shortLabel}</p>
+                            
+                            <div className="mt-8 space-y-4 w-full">
+                                {section.highlights.map((h, i) => (
+                                    <div key={i} className="bg-[#1C1C1E]/5 p-3 rounded-xl border border-[#1C1C1E]/10">
+                                        <p className="text-sm font-bold text-[#1C1C1E] tracking-tight italic uppercase">{h}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column - Deep Dive Content */}
+                    <div className="col-span-8 flex flex-col gap-4 overflow-hidden">
+                        <div className="card-container rounded-[1.5rem] p-8 flex-1 bg-white border-2 border-[#1C1C1E] flex flex-col overflow-hidden">
+                            <h3 className="text-[11px] font-black uppercase tracking-widest text-[#1C1C1E]/40 mb-5 shrink-0">{section.contentTitle}</h3>
+                            
+                            <div className="grid grid-cols-2 gap-8 flex-1 overflow-hidden">
+                                {section.listGroups.map((group, idx) => (
+                                    <div key={idx} className="flex flex-col overflow-hidden">
+                                        <div className="flex items-center gap-2 mb-4 shrink-0">
+                                            <div className={`w-3 h-3 rounded-sm ${group.isPositive ? 'bg-[#47D1C4]' : 'bg-[#F24822]'}`}></div>
+                                            <h4 className="text-[13px] font-black uppercase tracking-tighter text-[#1C1C1E]">{group.label}</h4>
+                                        </div>
+                                        <div className="space-y-3 overflow-y-auto pr-1 custom-scrollbar">
+                                            {group.items.map((item, i) => (
+                                                <div key={i} className="flex gap-4 items-center p-3 rounded-xl border border-[#1C1C1E]/5 hover:bg-[#F9F9F9] transition-colors">
+                                                    <div className={`shrink-0 w-6 h-6 rounded-full flex items-center justify-center ${group.isPositive ? 'text-[#47D1C4] bg-[#47D1C4]/10' : 'text-[#F24822] bg-[#F24822]/10'}`}>
+                                                        <Icon type={group.isPositive ? 'check' : 'cross'} size="14" />
+                                                    </div>
+                                                    <span className="policy-item-text text-[#1C1C1E]">{item}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {section.footerNote && (
+                                <div className="mt-6 p-4 bg-[#FFDD33] rounded-xl border-2 border-[#1C1C1E] flex gap-4 items-center shadow-[4px_4px_0px_#1C1C1E] shrink-0">
+                                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center border-2 border-[#1C1C1E] shrink-0">
+                                        <Icon type="rules" size="20" />
+                                    </div>
+                                    <p className="text-[14px] font-black uppercase tracking-tight text-[#1C1C1E] leading-tight italic">
+                                        {section.footerNote}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const App = () => {
+            useAutoScaler();
+            const [selectedSection, setSelectedSection] = useState(null);
+
+            const sections = [
+                {
+                    id: 'allocation',
+                    title: "四半期ごとの割り当て",
+                    shortLabel: "60時間 / 四半期",
+                    color: "#FFDD33",
+                    highlights: [
+                        "四半期ごとに60時間を割り当て",
+                        "未使用時間の繰り越し不可",
+                        "2月にリセット (2027年度 Q1)"
+                    ],
+                    contentTitle: "会計カレンダーとリセットの仕組み",
+                    listGroups: [
+                        {
+                            label: "会計四半期 (2026年)",
+                            isPositive: true,
+                            items: [
+                                "第1四半期: 2月 | 3月 | 4月",
+                                "第2四半期: 5月 | 6月 | 7月",
+                                "第3四半期: 8月 | 9月 | 10月",
+                                "第4四半期: 11月 | 12月 | 1月"
+                            ]
+                        },
+                        {
+                            label: "リセットポリシー",
+                            isPositive: false,
+                            items: [
+                                "未使用時間は翌四半期に繰り越せません",
+                                "各四半期の初日にリセットされます",
+                                "四半期最終日の23:59に失効します",
+                                "Miroアカウントごとの割り当てです"
+                            ]
+                        }
+                    ],
+                    footerNote: "四半期ごとの割り当ては、2月、5月、8月、11月の初日にリセットされます。"
+                },
+                {
+                    id: 'counting',
+                    title: "時間のカウント方法",
+                    shortLabel: "専門家のキャパシティ",
+                    color: "#47D1C4",
+                    highlights: [
+                        "ワークショップ & セッション",
+                        "準備 & ドキュメント作成",
+                        "設定 & 移行サポート"
+                    ],
+                    contentTitle: "消費の定義",
+                    listGroups: [
+                        {
+                            label: "カウント対象の活動",
+                            isPositive: true,
+                            items: ["設定および移行作業", "ワークショップおよびトレーニング", "舞台裏での分析およびドキュメント作成", "同期ルールとマッピングの設定", "無断欠席（24時間前までの通知なし）"]
+                        },
+                        {
+                            label: "カウント対象外",
+                            isPositive: false,
+                            items: ["Miro内部トレーニング/管理業務", "営業またはプリセールス活動", "会議の日程調整にかかる時間", "一般的なMiroプラットフォームの更新"]
+                        }
+                    ],
+                    footerNote: "トラッキングには、成果を提供するために必要な専門家の全キャパシティが含まれます。"
+                },
+                {
+                    id: 'rules',
+                    title: "消費ルール",
+                    shortLabel: "ペースと制限",
+                    color: "#867AFF",
+                    highlights: [
+                        "1リクエストあたり最小4時間",
+                        "週あたり最大15時間",
+                        "四半期バンクの超過不可"
+                    ],
+                    contentTitle: "利用ガイドライン",
+                    listGroups: [
+                        {
+                            label: "標準ルール",
+                            isPositive: true,
+                            items: ["1サービスリクエストにつき最小4時間", "週あたりのペース制限は最大15時間", "最大3つの同時ワークストリーム", "月次利用状況サマリーの提供"]
+                        },
+                        {
+                            label: "キャパシティの上限",
+                            isPositive: false,
+                            items: ["自動的な超過時間の発生はありません", "超過分は翌四半期に繰り延べられます", "四半期あたり60時間の厳格な制限", "手動でのクレジット譲渡は不可"]
+                        }
+                    ],
+                    footerNote: "週あたりのペース制限により、リソースの公平なアクセスと継続的な進捗を確保します。"
+                },
+                {
+                    id: 'purchase',
+                    title: "時間の追加が必要ですか？",
+                    shortLabel: "追加ブロックの購入",
+                    color: "#CE70FC",
+                    highlights: [
+                        "20時間ブロックを購入可能",
+                        "年間最大2ブロックまで",
+                        "80%の使用率が購入条件"
+                    ],
+                    contentTitle: "追加キャパシティポリシー",
+                    listGroups: [
+                        {
+                            label: "購入基準",
+                            isPositive: true,
+                            items: ["基本割り当ての80%以上を使用（予測）", "有効なサブスクリプション契約中", "追加時間の利用ロードマップの定義", "標準化された契約変更の締結"]
+                        },
+                        {
+                            label: "追加の制限事項",
+                            isPositive: false,
+                            items: ["12ヶ月間で最大2ブロックまで", "購入後の払い戻しはできません", "既存の失効/リセットルールが適用", "複数四半期の一括繰り越しは不可"]
+                        }
+                    ],
+                    footerNote: "追加の時間が必要な場合は、CSMまたはAEにお問い合わせください。"
+                }
+            ];
+
+            return (
+                <div className="canvas-bg select-none">
+                    <div className="h-[105px] px-10 flex items-center justify-between relative z-20 mt-3 shrink-0">
+                        <div className="sharp-text">
+                            <div className="flex items-center gap-2 mb-1">
+                                <div className="bg-[#1C1C1E] text-[#FFDD33] px-2 py-0.5 rounded text-[10px] font-black tracking-widest uppercase">Miro プロフェッショナルサービス</div>
+                                <div className="w-8 h-[1px] bg-[#1C1C1E]/10"></div>
+                            </div>
+                            <h1 className="text-[44px] font-[900] italic uppercase leading-[0.9] tracking-tighter text-[#1C1C1E]">
+                                MOST サブスクリプション<span className="miro-highlight">時間の仕組み</span>
+                            </h1>
+                        </div>
+                    </div>
+
+                    {!selectedSection ? (
+                        <div className="view-transition flex-1 px-10 pb-10 grid grid-cols-4 gap-6 overflow-hidden">
+                            {sections.map((s) => (
+                                <OverviewCard key={s.id} data={s} onSelect={setSelectedSection} />
+                            ))}
+                        </div>
+                    ) : (
+                        <DetailView section={selectedSection} onBack={() => setSelectedSection(null)} />
+                    )}
+
+                    <div className="h-[40px] px-10 flex justify-between items-center bg-white/50 border-t border-[#1C1C1E]/5 mb-1 shrink-0">
+                        <div className="flex gap-6 items-center">
+                            <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#FFDD33]"></div>
+                                <span className="text-[9px] font-black uppercase text-[#1C1C1E]/60 tracking-widest leading-none italic">割り当て</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#47D1C4]"></div>
+                                <span className="text-[9px] font-black uppercase text-[#1C1C1E]/60 tracking-widest leading-none italic">消費</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-[#867AFF]"></div>
+                                <span className="text-[9px] font-black uppercase text-[#1C1C1E]/60 tracking-widest leading-none italic">実行</span>
+                            </div>
+                        </div>
+                        <div className="flex gap-3 items-center">
+                             <div className="text-[8px] font-black text-[#1C1C1E]/20 tracking-tighter uppercase italic">Miro 最適化サービス & トレーニング • v2026.7</div>
+                             <div className="w-[1px] h-3 bg-[#1C1C1E]/10"></div>
+                             <svg width="32" height="10" viewBox="0 0 100 32" fill="#1C1C1E" className="opacity-10"><path d="M12 4h4v24h-4zM24 4h4v24h-4zM36 4h4v24h-4zM48 4h4v24h-4z" /></svg>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
