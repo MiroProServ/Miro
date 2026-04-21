@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Miro Promotion Celebration</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;0,900;1,900&display=swap');
+        
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            background-color: #FFFFFF;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #root {
+            width: 1280px;
+            height: 720px;
+            transform-origin: center center;
+            flex-shrink: 0;
+            position: absolute;
+        }
+
+        .canvas-bg {
+            width: 1280px;
+            height: 720px;
+            background-color: #FFFFFF;
+            background-image: radial-gradient(#EAEAEA 1.5px, transparent 0);
+            background-size: 24px 24px;
+            display: flex;
+            flex-direction: column; 
+            border: 4px solid #FFDD33;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .sharp-text {
+            backface-visibility: hidden;
+            transform: translateZ(0);
+        }
+
+        .miro-highlight {
+            background-color: #FFDD33;
+            padding: 0 16px;
+            border-radius: 12px;
+            display: inline-block;
+            box-shadow: 6px 6px 0px #1C1C1E;
+        }
+
+        /* Confetti Styles */
+        .confetti-piece {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            top: -20px;
+            will-change: transform;
+        }
+
+        .confetti-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 2px;
+        }
+
+        @keyframes fall {
+            0% { transform: translate3d(var(--x-start), -20px, 0) rotateX(0deg) rotateY(0deg); }
+            100% { transform: translate3d(var(--x-end), 740px, 0) rotateX(720deg) rotateY(360deg); }
+        }
+
+        .animate-fall {
+            animation: fall var(--duration) linear forwards;
+            animation-delay: var(--delay);
+        }
+
+        .profile-placeholder {
+            background: #FFFFFF;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-width: 8px; 
+        }
+
+        .profile-placeholder:hover {
+            transform: translateY(-12px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .name-tag {
+            background: #1C1C1E;
+            color: #FFFFFF;
+            padding: 6px 16px;
+            font-weight: 900;
+            font-style: italic;
+            text-transform: uppercase;
+            font-size: 16px;
+            border-radius: 8px;
+            margin-top: -24px;
+            z-index: 20;
+            box-shadow: 4px 4px 0px #FFDD33;
+        }
+
+        @keyframes wiggle {
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
+        }
+        .animate-wiggle {
+            animation: wiggle 2s ease-in-out infinite;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const useAutoScaler = () => {
+            useEffect(() => {
+                const scaler = () => {
+                    const root = document.getElementById('root');
+                    if (root) {
+                        const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+                        root.style.transform = `scale(${scale})`;
+                    }
+                };
+                window.addEventListener('resize', scaler);
+                scaler();
+                return () => window.removeEventListener('resize', scaler);
+            }, []);
+        };
+
+        const ConfettiLayer = ({ isForeground, trigger }) => {
+            const [pieces, setPieces] = useState([]);
+            const pieceIdCounter = useRef(0);
+
+            useEffect(() => {
+                if (trigger === 0) return;
+
+                const colors = ['#FFDD33', '#47D1C4', '#867AFF', '#F24822', '#1C1C1E'];
+                const totalCount = isForeground ? 120 : 180; 
+                
+                const newBatch = Array.from({ length: totalCount }).map(() => {
+                    const xStart = Math.random() * 1280;
+                    const xEnd = xStart + (Math.random() * 600 - 300);
+                    const duration = 2.5 + Math.random() * 3.5;
+                    const delay = Math.random() * 3;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    
+                    return {
+                        id: pieceIdCounter.current++,
+                        color,
+                        style: {
+                            '--x-start': `${xStart}px`,
+                            '--x-end': `${xEnd}px`,
+                            '--duration': `${duration}s`,
+                            '--delay': `${delay}s`,
+                            left: 0,
+                        }
+                    };
+                });
+
+                setPieces(newBatch);
+                
+                const timer = setTimeout(() => setPieces([]), 10000); 
+                return () => clearTimeout(timer);
+            }, [isForeground, trigger]);
+
+            return (
+                <div className={`absolute inset-0 pointer-events-none overflow-hidden ${isForeground ? 'z-[100]' : 'z-[5]'}`}>
+                    {pieces.map(p => (
+                        <div key={`${trigger}-${p.id}`} className="confetti-piece animate-fall" style={p.style}>
+                            <div className="confetti-inner" style={{ backgroundColor: p.color }} />
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        const ProfileCard = ({ name, delay, borderColor }) => (
+            <div className="flex flex-col items-center group" style={{ animation: `fadeIn 0.8s ease-out ${delay}s both` }}>
+                <div 
+                    className="profile-placeholder w-64 h-64 rounded-[3.5rem] flex items-center justify-center"
+                    style={{ borderColor: borderColor }}
+                >
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#1C1C1E" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="opacity-10 group-hover:opacity-25 transition-opacity">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center text-[10px] font-black uppercase tracking-widest text-[#1C1C1E]/20 pointer-events-none">
+                        Drop Photo Here
+                    </div>
+                </div>
+                <div className="name-tag" style={{ boxShadow: `4px 4px 0px ${borderColor}` }}>
+                    {name}
+                </div>
+            </div>
+        );
+
+        const App = () => {
+            useAutoScaler();
+            const [trigger, setTrigger] = useState(0);
+
+            useEffect(() => {
+                setTrigger(prev => prev + 1);
+            }, []);
+
+            const handleCanvasClick = () => {
+                setTrigger(prev => prev + 1);
+            };
+
+            return (
+                <div className="canvas-bg select-none" onClick={handleCanvasClick}>
+                    <ConfettiLayer isForeground={false} trigger={trigger} />
+
+                    {/* Header Section */}
+                    <div className="h-[240px] flex flex-col items-center justify-center pt-12 relative z-20 sharp-text pointer-events-none">
+                        <div className="flex items-center gap-4 mb-4 animate-wiggle">
+                            <span className="bg-[#F24822] text-white px-5 py-2 text-[14px] font-black uppercase tracking-[0.4em] rounded-full shadow-[6px_6px_0px_#1C1C1E] flex items-center gap-2">
+                                <span>✨</span> PROMOTION ALERT <span>✨</span>
+                            </span>
+                        </div>
+                        <h1 className="text-[84px] font-[900] italic uppercase leading-none text-[#1C1C1E] tracking-tighter text-center">
+                            MEET OUR <span className="miro-highlight">NEWEST</span> ARCHITECTS
+                        </h1>
+                        <p className="text-[20px] font-black text-[#1C1C1E]/40 uppercase tracking-[0.3em] mt-6">
+                            Associate Innovation Architects • FY26
+                        </p>
+                    </div>
+
+                    {/* Profiles Grid */}
+                    <div className="flex-1 px-20 flex justify-center items-center gap-20 relative z-30 pointer-events-none">
+                        <div className="pointer-events-auto">
+                            <ProfileCard name="Sonal Thaper" delay={0.2} borderColor="#47D1C4" />
+                        </div>
+                        <div className="pointer-events-auto">
+                            <ProfileCard name="Zach Hill" delay={0.4} borderColor="#867AFF" />
+                        </div>
+                        <div className="pointer-events-auto">
+                            <ProfileCard name="Luke Jones" delay={0.6} borderColor="#FFDD33" />
+                        </div>
+                    </div>
+
+                    {/* Interaction Hint Removed per request */}
+                    <div className="h-[80px]" />
+
+                    <ConfettiLayer isForeground={true} trigger={trigger} />
+
+                    {/* Background Decor */}
+                    <div className="absolute -bottom-16 -right-16 text-[300px] font-[900] italic uppercase text-[#1C1C1E]/[0.02] tracking-tighter pointer-events-none">
+                        MIRO
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
