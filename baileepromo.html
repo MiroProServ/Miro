@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Leadership Announcement - Bailee Walker</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,700;0,900;1,900&display=swap');
+        
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; 
+            background-color: #FFFFFF;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        #root {
+            width: 1280px;
+            height: 720px;
+            transform-origin: center center;
+            flex-shrink: 0;
+            position: absolute;
+        }
+
+        .canvas-bg {
+            width: 1280px;
+            height: 720px;
+            background-color: #FFFFFF;
+            background-image: radial-gradient(#EAEAEA 1.5px, transparent 0);
+            background-size: 24px 24px;
+            display: flex;
+            flex-direction: column; 
+            border: 6px solid #47D1C4;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        /* --- Rainbow Pulse Tag Effect --- */
+        @keyframes rainbow-pulse {
+            0% { box-shadow: 0 0 0 0px #F24822; }
+            33% { box-shadow: 0 0 0 10px #FFDD33; }
+            66% { box-shadow: 0 0 0 20px #47D1C4; }
+            100% { box-shadow: 0 0 0 0px #F24822; }
+        }
+
+        .alert-tag-glow {
+            animation: rainbow-pulse 3s infinite;
+        }
+
+        /* --- Portrait Border Effect --- */
+        @keyframes rotate-gradient {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .animated-border-container {
+            position: relative;
+            padding: 12px;
+            background: #1C1C1E;
+            border-radius: 4.5rem;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .animated-border-container::before {
+            content: "";
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: conic-gradient(
+                #FFDD33, #47D1C4, #867AFF, #F24822, #FFDD33
+            );
+            animation: rotate-gradient 4s linear infinite;
+        }
+
+        .hero-inner {
+            position: relative;
+            z-index: 10;
+            background: white;
+            border-radius: 4rem;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            border: 4px solid #1C1C1E;
+        }
+
+        .miro-highlight {
+            background-color: #FFDD33;
+            padding: 0 20px;
+            border-radius: 14px;
+            display: inline-block;
+            box-shadow: 8px 8px 0px #1C1C1E;
+        }
+
+        /* Confetti */
+        .confetti-piece {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            top: -20px;
+            will-change: transform;
+        }
+        .confetti-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 3px;
+        }
+        @keyframes fall {
+            0% { transform: translate3d(var(--x-start), -20px, 0) rotateX(0deg) rotateY(0deg); }
+            100% { transform: translate3d(var(--x-end), 740px, 0) rotateX(720deg) rotateY(360deg); }
+        }
+        .animate-fall {
+            animation: fall var(--duration) linear forwards;
+            animation-delay: var(--delay);
+        }
+
+        @keyframes float-sparkle {
+            0%, 100% { transform: translateY(0) scale(1); opacity: 1; }
+            50% { transform: translateY(-10px) scale(1.2); opacity: 0.5; }
+        }
+        .sparkle-particle {
+            animation: float-sparkle 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const BAILEE_PHOTO = "https://ca.slack-edge.com/T028Q5EBK-U02H3C89MPS-485d078d6baa-512";
+
+        const useAutoScaler = () => {
+            useEffect(() => {
+                const scaler = () => {
+                    const root = document.getElementById('root');
+                    if (root) {
+                        const scale = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+                        root.style.transform = `scale(${scale})`;
+                    }
+                };
+                window.addEventListener('resize', scaler);
+                scaler();
+                return () => window.removeEventListener('resize', scaler);
+            }, []);
+        };
+
+        const ConfettiLayer = ({ isForeground, trigger }) => {
+            const [pieces, setPieces] = useState([]);
+            const pieceIdCounter = useRef(0);
+
+            useEffect(() => {
+                if (trigger === 0) return;
+                const colors = ['#FFDD33', '#47D1C4', '#867AFF', '#F24822', '#1C1C1E'];
+                const totalCount = isForeground ? 180 : 280; 
+                const newBatch = Array.from({ length: totalCount }).map(() => {
+                    const xStart = Math.random() * 1280;
+                    const xEnd = xStart + (Math.random() * 800 - 400);
+                    const duration = 2 + Math.random() * 3.5;
+                    const delay = Math.random() * 2.5;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    return {
+                        id: pieceIdCounter.current++,
+                        color,
+                        style: {
+                            '--x-start': `${xStart}px`,
+                            '--x-end': `${xEnd}px`,
+                            '--duration': `${duration}s`,
+                            '--delay': `${delay}s`,
+                            left: 0,
+                        }
+                    };
+                });
+                setPieces(newBatch);
+                const timer = setTimeout(() => setPieces([]), 12000); 
+                return () => clearTimeout(timer);
+            }, [isForeground, trigger]);
+
+            return (
+                <div className={`absolute inset-0 pointer-events-none overflow-hidden ${isForeground ? 'z-[100]' : 'z-[5]'}`}>
+                    {pieces.map(p => (
+                        <div key={`${trigger}-${p.id}`} className="confetti-piece animate-fall" style={p.style}>
+                            <div className="confetti-inner" style={{ backgroundColor: p.color }} />
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        const Sparkle = ({ style }) => (
+            <div className="absolute sparkle-particle pointer-events-none text-xl" style={style}>✨</div>
+        );
+
+        const App = () => {
+            useAutoScaler();
+            const [trigger, setTrigger] = useState(0);
+
+            useEffect(() => {
+                setTrigger(prev => prev + 1);
+            }, []);
+
+            const handleCanvasClick = () => {
+                setTrigger(prev => prev + 1);
+            };
+
+            return (
+                <div className="canvas-bg select-none" onClick={handleCanvasClick}>
+                    <ConfettiLayer isForeground={false} trigger={trigger} />
+
+                    <div className="flex h-full w-full">
+                        {/* Left Content */}
+                        <div className="w-[55%] flex flex-col justify-center pl-20 relative z-20 pointer-events-none">
+                            <div className="relative w-fit mb-12">
+                                <div className="bg-[#F24822] text-white px-8 py-3 text-[18px] font-black uppercase tracking-[0.4em] rounded-full shadow-[6px_6px_0px_#1C1C1E] flex items-center gap-3 alert-tag-glow relative z-10">
+                                    PROMOTION ANNOUNCEMENT
+                                </div>
+                                <Sparkle style={{ top: '-20px', left: '-10px', animationDelay: '0s' }} />
+                                <Sparkle style={{ bottom: '-10px', right: '-10px', animationDelay: '0.5s' }} />
+                                <Sparkle style={{ top: '10px', right: '-30px', animationDelay: '1s' }} />
+                            </div>
+                            
+                            <h1 className="text-[96px] font-[900] italic uppercase leading-[0.9] text-[#1C1C1E] tracking-tighter mb-8">
+                                BAILEE <br />
+                                <span className="miro-highlight">WALKER</span>
+                            </h1>
+
+                            <div className="bg-[#1C1C1E] p-8 rounded-[2.5rem] w-fit shadow-[12px_12px_0px_#47D1C4] border-4 border-[#1C1C1E]">
+                                <p className="text-[#FFDD33] text-[14px] font-black uppercase tracking-[0.3em] mb-2">Promoted to</p>
+                                <p className="text-white text-[42px] font-[900] italic uppercase leading-none tracking-tighter">
+                                    Global Value <br /> Advisory Leader
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Right Content */}
+                        <div className="w-[45%] flex items-center justify-center pr-20 relative z-30">
+                            <div className="flex flex-col items-center">
+                                {/* Rotating Halo Border Container */}
+                                <div className="animated-border-container w-[420px] h-[520px] shadow-[20px_20px_0px_#FFDD33]">
+                                    <div className="hero-inner">
+                                        <img 
+                                            src={BAILEE_PHOTO} 
+                                            alt="Bailee Walker" 
+                                            className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <ConfettiLayer isForeground={true} trigger={trigger} />
+
+                    {/* Background Decor */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[500px] font-[900] italic uppercase text-[#1C1C1E]/[0.01] tracking-tighter pointer-events-none">
+                        LEADER
+                    </div>
+                    
+                    <div className="absolute bottom-8 left-20 opacity-20 pointer-events-none">
+                        <span className="text-[12px] font-black uppercase tracking-[0.4em] italic text-[#1C1C1E]">
+                            FY27 Strategy & Growth • Internal Announcement
+                        </span>
+                    </div>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
